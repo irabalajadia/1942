@@ -1,0 +1,371 @@
+<html>
+<head>
+	<title>1942 Game</title>
+<style type="text/css">
+	@font-face {
+		font-family: Flappy;
+		src: url('pp.ttf');
+	}
+
+	*{
+		margin: 0;
+		padding: 0;
+	}
+
+	@keyframes blinker {
+	  50% {
+	    opacity: 0;
+	  }
+	}
+
+	.blink {
+	  animation: blinker 1s linear infinite;
+	}
+
+	body{
+		background: url('background2.jpg');
+		background-size: cover;
+		background-color: #000;
+		font-family: Flappy;
+		color: #fff;
+	}
+
+	#container{
+		background: url('space-background.png');
+		position: relative;
+		width:500px;
+		height:550px;
+		box-shadow: 0px 0px 20px 0px rgba(255,255,255,1);
+		border: 5px solid #42d4f5;
+		border-radius: 5px;
+		margin: 50px auto;
+	}
+
+	#hero{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -85px -180px;
+		width:28px;
+		height:28px;
+	}
+
+	.enemy1{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -30px -10px;
+		width:28px;
+		height:25px;
+	}
+
+	.enemy2{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: 85px -10px;
+		width:28px;
+		height:23px;
+	}
+
+	.enemy3{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: 55px -10px;
+		width:30px;
+		height:23px;
+	}
+
+	.explode1{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -145px -35px;
+		width:30px;
+		height:35px;
+	}
+
+	.explode2{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -115px -35px;
+		width:30px;
+		height:35px;
+	}
+
+	.explode3{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -80px -35px;
+		width:25px;
+		height:25px;
+	}
+
+	.explode4{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -60px -35px;
+		width:25px;
+		height:25px;
+	}
+
+	.explode5{
+		position:absolute;
+		background: url('1942.gif');
+		background-position: -30px -35px;
+		width:25px;
+		height:25px;
+	}
+
+	.bullet{
+		background: url('1942.gif');
+		background-position: -185px -400px;
+		width:18px;
+		height:18px;
+		position:absolute;
+	}
+
+	#score{
+		position:absolute;
+		top:5px;
+		left:20px;
+		width: 440px;
+		padding:10px;
+		font-size:20px;
+		/*border: 1px solid white;*/
+	}
+
+	#livesp{
+		position: absolute;
+		top:10px;
+		right: 5px;
+	}
+
+
+	#gameover{
+		background: url('space-background.png');
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		padding-top: 170px;
+		font-size: 30px;
+		line-height: 2;
+		text-align: center;
+		visibility: hidden;
+	}
+
+	button{
+			background-color: #000;
+			border: 5px solid #46d3f2;
+			border-radius: 5px;
+			padding: 20px 30px;
+			margin-top: 20px;
+			font-family: Flappy;
+			font-size: 15px;
+			color: #fff;
+		}
+</style>
+</head>
+<body>
+	<div id='container'>
+		<div id='hero'></div>
+		<div id='enemies'></div>
+		<div id='bullets'></div>	
+		<div id='explosion'></div>
+		<div id='score'>
+			<p id='scorep'>Score: <span id='span'>0<span><p>
+			<p id='livesp'>Lives: <span id='lives'>3<span><p>
+		</div>
+		<div id='gameover'>
+			<p>Game Over!</p>
+			<p>Score : <span id='overScore'></span></p>
+			<button id='restart'>New Game</button>
+		</div>
+	</div>
+
+<script>
+	var hero = { x: 240, y: 500};
+	var enemies = [
+			{x: 50, y:120, lst: 1},
+			{x: 150, y:10, lst: 2},
+			{x: 280, y:70, lst: 3},
+			{x: 420, y:20, lst: 1},
+			{x: 200, y: 200, lst: 2},
+			{x: 380, y: 300, lst: 3},
+			{x: 20, y: 300, lst: 1},
+			{x: 460, y: 180, lst: 2},
+			{x: 120, y: 100, lst: 3},
+			{x: 360, y: 100, lst: 1}
+		];
+	var bullets = [];
+	var explosion = [];
+	var score = 0;
+	var lives = 3;
+
+	function displayHero(){
+		document.getElementById('hero').style['top'] = hero.y + "px";
+		document.getElementById('hero').style['left'] = hero.x + "px";
+	}
+
+	function displayEnemies(){
+		var output = '';
+		for(var i = 0; i < enemies.length; i++){
+			output += "<div class='enemy"+enemies[i].lst+"' style='top:"+enemies[i].y+"px; left:"+enemies[i].x+"px;'></div>";
+		}
+		document.getElementById('enemies').innerHTML = output;
+	}
+
+	function moveEnemies(){
+		for(var i = 0; i < enemies.length; i++){
+			enemies[i].y +=5;
+
+			if(enemies[i].y > 540){
+				var rnd = Math.floor(Math.random()*3+1);
+				enemies[i].lst = rnd;
+				enemies[i].y = 50;
+				enemies[i].x = Math.floor(Math.random()*460);
+			}
+		}
+	}
+
+	function moveBullets(){
+		for(var i = 0; i < bullets.length; i++){
+			bullets[i].y -=5;
+
+			if(bullets[i].y < 50){
+				bullets[i] = bullets[bullets.length - 1];
+				bullets.pop();
+			}
+		}
+	}
+
+	function displayBullets(){
+		var output = '';
+		for(var i = 0; i < bullets.length; i++){
+			output += "<div class='bullet' style='top:"+bullets[i].y+"px; left:"+bullets[i].x+"px;'></div>";
+		}
+		document.getElementById('bullets').innerHTML = output;
+	}
+
+	function detectCollision(){
+		for(var i = 0; i < bullets.length; i++){
+			for(var j = 0; j < enemies.length; j++){
+				if(Math.abs(bullets[i].x - enemies[j].x) < 15 && Math.abs(bullets[i].y - enemies[j].y) < 10){
+					//var rnd = Math.floor(Math.random()*3+1);
+					explosion.push({x: enemies[j].x, y: enemies[j].y, lst: 1});
+
+					bullets[i].y = -1;
+					enemies[j].y = 50;
+					enemies[j].x = Math.floor(Math.random()*460);
+
+					if(enemies[j].lst == 1){
+						score += 10;
+					}else if(enemies[j].lst == 2){
+						score += 30;
+					}else{
+						score += 50;
+					}
+
+					document.getElementById('span').innerHTML = score;
+					
+					// var sound = document.getElementById('sound');
+					// sound.play();
+					playSound(1);
+				}
+			}
+		}
+
+		for(var i = 0; i < enemies.length; i++){
+			if(Math.abs(hero.x - enemies[i].x) < 25  && hero.y == enemies[i].y){
+					score -= 500;
+					document.getElementById('span').innerHTML = score;
+					explosion.push({x: enemies[i].x, y: enemies[i].y, lst: 1});
+					explosion.push({x: hero.x, y: hero.y, lst: 1});
+					enemies[i].y = 50;
+					lives--;
+
+					hero.x = 240;
+					hero.y = 500;
+					document.getElementById('lives').innerHTML = lives;
+					playSound(0);
+
+					if(lives < 0){
+						document.getElementById('gameover').style.visibility = 'visible';
+						document.getElementById('overScore').innerHTML = score;
+						clearInterval(clearInt);
+					}
+				}
+		}
+	}
+
+	function displayExplosion(){
+		var output = '';
+		for(var i = 0; i < explosion.length; i++){
+			output += "<div class='explode"+explosion[i].lst+"' style='top:"+explosion[i].y+"px; left:"+explosion[i].x+"px;'></div>";
+
+			if(explosion[i].lst < 5){
+				explosion[i].lst++;
+			}else{
+				explosion[i] = explosion[explosion.length-1];
+                explosion.pop();
+			}
+		}
+		document.getElementById('explosion').innerHTML = output;
+	}
+
+	function playSound(x){
+		if(x == 1){
+			var src = 'explosion.mp3';
+			var aud = new Audio();
+		}else{
+			var src = 'explosion2.wav';
+			var aud = new Audio();
+		}
+		aud.src = src;
+		aud.play();
+	}
+
+	function gameLoop(){
+		displayHero();
+		moveEnemies();
+		displayEnemies();
+		moveBullets();
+		displayBullets();
+		detectCollision();
+		displayExplosion();
+	}
+
+	var clearInt = setInterval(gameLoop, 100);
+
+	document.onkeydown = function(a){
+		if(a.keyCode == 37){ //left
+			if(hero.x >= 10){
+				hero.x -=10;
+			}
+		}else if(a.keyCode == 38){//up
+			if(hero.y >= 10){
+				hero.y -=10;
+			}
+		}else if(a.keyCode == 39){ //right
+			if(hero.x <= 465){
+				hero.x += 10;
+			}
+		}else if(a.keyCode == 40){
+			if(hero.y <= 510){
+				hero.y += 10;
+			}
+		}else if(a.keyCode == 32){
+			bullets.push({x: hero.x+5, y: hero.y-15});
+			displayBullets();
+		}
+
+	}
+
+	var restart = document.getElementById('restart');
+
+	restart.onclick = function(){
+		location.reload();
+	}
+
+</script>
+
+</body>
+</html>
